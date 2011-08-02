@@ -1,0 +1,18 @@
+Config	{ font = "xft:Terminus-8"
+		, bgColor	= "#101010"
+		, fgColor	= "#cccccc"
+		, position	= Static {
+						xpos = 0,
+						ypos = 0,
+						width = 1366,
+						height = 14
+						}
+		, commands	= [ Run Cpu ["-t","Cpu: <total>"] 10
+					  , Run Memory ["-t","Mem: <used>/<total>"] 10
+					  , Run Date "%a %b %_d %k:%M" "date" 10
+					  , Run StdinReader
+					  ]
+		, sepChar	= "%"
+		, alignSep	= "}{"
+		, template	= "%StdinReader% }{ %cpu% | %memory% | %date%"
+}
