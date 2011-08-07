@@ -25,7 +25,7 @@ myBorderWidth             = 1
 myModMask                 = mod1Mask --mod1Mask left alt, mod3Mask -- right alt, mod4Mask -- super
 
 
-myGSConfig                = defaultGSConfig { gs_font = "xft:terminus-12"
+myGSConfig                = defaultGSConfig { gs_font = "xft:Dejavu:size=12"
                                             , gs_cellheight = 50
                                             , gs_cellwidth = 120
                                             , gs_originFractX = 0.20
@@ -45,6 +45,7 @@ myKeys = \c -> mkKeymap c $
        , ("M-g",          goToSelected $ myGSConfig)
 
        , ("M-w",          spawn "LANG=ru_RU.utf8 firefox")
+       , ("M-e",          spawn "emacs")
 
        , ("C-M-l",        spawn "slock")
        , ("M-<Esc>",      spawn "~/script/halt_menu.sh")
