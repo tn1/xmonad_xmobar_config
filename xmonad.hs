@@ -1,4 +1,5 @@
 import XMonad
+import XMonad.Config.Kde
 
 import XMonad.Layout.NoBorders
 import XMonad.Layout.PerWorkspace
@@ -40,6 +41,7 @@ myKeys = \c -> mkKeymap c $
 
        , ("M-[",          windows W.focusDown)
        , ("M-]",          windows W.focusUp)
+       , ("M-a",          windows W.shiftMaster)
 
        , ("M-q",          kill)
        , ("M-g",          goToSelected $ myGSConfig)
@@ -54,18 +56,18 @@ myKeys = \c -> mkKeymap c $
        , ("M-<Print>",    spawn "scrot '%Y-%m-%d_%H-%M-%S.png' -e 'mv $f ~/other/shots/'")
        ] ++
        [(m ++ k, windows $ f w)
-        | (w, k) <- zip (XMonad.workspaces c) (map show [1..9])
+        | (w, k) <- zip (XMonad.workspaces c) (map show [1..5])
         , (m, f) <- [("M-",W.greedyView), ("M-S-",W.shift)]]
 
 myManageHook = composeAll
-             [ className =? "Emacs"     --> doF  (W.shift "2:emacs")
-             , className =? "Firefox"   --> doF  (W.shift "3:net")
+             [ className =? "Firefox"   --> doF  (W.shift "3:net")
              , className =? "MPlayer"   --> doFloat
              , className =? "feh"       --> doFloat
+             , className =? "Plasma-desktop"    --> doFloat
              ]
 
 
-myLayoutHook = onWorkspace "2:emacs" full $ onWorkspace "3:net" full $ standartLayouts
+myLayoutHook = onWorkspace "3:net" full $ standartLayouts
              where
                 standartLayouts = avoidStruts $ (tiled ||| full)
                 tiled  = Tall 1 (5/100) (1/2)
@@ -78,18 +80,19 @@ myLogHook xmobar = dynamicLogWithPP $ xmobarPP { ppOutput = hPutStrLn xmobar
           }
 
 main = do
-     xmobar     <- spawnPipe "xmobar ~/.xmonad/xmobarrc"
+--     xmobar     <- spawnPipe "xmobar ~/.xmonad/xmobarrc"
 
-     xmonad  $ defaultConfig {
-            terminal                    = myTerminal
-            , modMask                   = myModMask
+     xmonad  $ kde4Config {
+--            terminal                    = myTerminal
+             modMask                   = myModMask
             , workspaces       		= myWorkspaces
             , keys			= myKeys
             , normalBorderColor		= myNormalBorderColor
             , focusedBorderColor        = myFocusedBorderColor
             , borderWidth		= myBorderWidth
             , startupHook		= setDefaultCursor xC_left_ptr
-            , manageHook		= manageDocks <+> myManageHook
+            , manageHook		=  manageDocks <+> myManageHook
             , layoutHook                = smartBorders $ myLayoutHook
-            , logHook                   = myLogHook xmobar
+--            , logHook                   = myLogHook xmobar
             }
+--}
