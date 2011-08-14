@@ -1,5 +1,4 @@
 import XMonad
-import XMonad.Config.Kde
 
 import XMonad.Layout.NoBorders
 import XMonad.Layout.PerWorkspace
@@ -15,15 +14,17 @@ import XMonad.Util.Cursor
 
 import qualified XMonad.StackSet        as W
 
+import System.Exit
+
 myTerminal                = "urxvtc"
 
 myWorkspaces              = ["1:main", "2:emacs", "3:net", "4:media", "5:other"]
 
-myNormalBorderColor       = "#333333"
+myNormalBorderColor       = "#101010"
 myFocusedBorderColor      = "#aaaaaa"
 myBorderWidth             = 1
 
-myModMask                 = mod1Mask --mod1Mask left alt, mod3Mask -- right alt, mod4Mask -- super
+myModMask                 = mod1Mask
 
 
 myGSConfig                = defaultGSConfig { gs_font = "xft:Dejavu:size=12"
@@ -35,12 +36,12 @@ myGSConfig                = defaultGSConfig { gs_font = "xft:Dejavu:size=12"
 myKeys = \c -> mkKeymap c $
        [ ("M-<Return>",   spawn $ terminal c)
        , ("M-S-q",        spawn "xmonad --recompile && xmonad --restart")
-
+       , ("M-S-<Esc>",    io (exitWith ExitSuccess))
        , ("M-<Space>",    sendMessage NextLayout)
        , ("M-b",          sendMessage ToggleStruts)
 
-       , ("M-[",          windows W.focusDown)
-       , ("M-]",          windows W.focusUp)
+       , ("M-[",          windows W.focusUp)
+       , ("M-]",          windows W.focusDown)
        , ("M-a",          windows W.shiftMaster)
 
        , ("M-q",          kill)
@@ -60,18 +61,18 @@ myKeys = \c -> mkKeymap c $
         , (m, f) <- [("M-",W.greedyView), ("M-S-",W.shift)]]
 
 myManageHook = composeAll
-             [ className =? "Firefox"   --> doF  (W.shift "3:net")
+             [ className =? "Emacs"     --> doF (W.shift "2:emacs")
+             , className =? "Firefox"   --> doF (W.shift "3:net")
              , className =? "MPlayer"   --> doFloat
              , className =? "feh"       --> doFloat
-             , className =? "Plasma-desktop"    --> doFloat
              ]
 
 
-myLayoutHook = onWorkspace "3:net" full $ standartLayouts
+myLayoutHook = onWorkspace "3:net" myFull $ standartLayouts
              where
-                standartLayouts = avoidStruts $ (tiled ||| full)
-                tiled  = Tall 1 (5/100) (1/2)
-                full   = Full
+                standartLayouts = avoidStruts (myTiled ||| myFull)
+                myTiled  = Tall 1 (5/100) (1/2)
+                myFull   = Full
 
 myLogHook xmobar = dynamicLogWithPP $ xmobarPP { ppOutput = hPutStrLn xmobar
           , ppCurrent	= xmobarColor "#111111" "#cccccc" . shorten 15
@@ -80,19 +81,18 @@ myLogHook xmobar = dynamicLogWithPP $ xmobarPP { ppOutput = hPutStrLn xmobar
           }
 
 main = do
---     xmobar     <- spawnPipe "xmobar ~/.xmonad/xmobarrc"
+     xmobar     <- spawnPipe "xmobar ~/.xmonad/xmobarrc"
 
-     xmonad  $ kde4Config {
---            terminal                    = myTerminal
-             modMask                   = myModMask
+     xmonad  $ defaultConfig {
+            terminal                    = myTerminal
+            , modMask                   = myModMask
             , workspaces       		= myWorkspaces
             , keys			= myKeys
             , normalBorderColor		= myNormalBorderColor
             , focusedBorderColor        = myFocusedBorderColor
             , borderWidth		= myBorderWidth
             , startupHook		= setDefaultCursor xC_left_ptr
-            , manageHook		=  manageDocks <+> myManageHook
+            , manageHook		= manageDocks <+> myManageHook
             , layoutHook                = smartBorders $ myLayoutHook
---            , logHook                   = myLogHook xmobar
+            , logHook                   = myLogHook xmobar
             }
---}

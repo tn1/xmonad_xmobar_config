@@ -5,7 +5,7 @@ Config	{ font = "xft:Terminus-8"
 						xpos = 0,
 						ypos = 0,
 						width = 1366,
-						height = 14
+						height = 13
 						}
 		, commands	= [ Run Cpu ["-t","Cpu: <total>"] 10
 					  , Run Memory ["-t","Mem: <used>/<total>"] 10
