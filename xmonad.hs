@@ -4,6 +4,7 @@ import XMonad.Layout.NoBorders
 import XMonad.Layout.PerWorkspace
 
 import XMonad.Actions.GridSelect
+import XMonad.Actions.WindowGo
 
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
@@ -17,6 +18,7 @@ import qualified XMonad.StackSet        as W
 import System.Exit
 
 myTerminal                = "urxvtc"
+myRunner                  = "dmenu_run -fn \"-xos4-terminus-medium-r-normal--12-120-72-72-c-60-*-*\" -l 3  -nb \"#cccccc\" -nf \"#111111\" -sb \"#111111\" -sf \"#cccccc\""
 
 myWorkspaces              = ["1:main", "2:emacs", "3:net", "4:media", "5:other"]
 
@@ -34,9 +36,9 @@ myGSConfig                = defaultGSConfig { gs_font = "xft:Dejavu:size=12"
                                             , gs_originFractY = 0.85 }
 
 myKeys = \c -> mkKeymap c $
-       [ ("M-<Return>",   spawn $ terminal c)
-       , ("M-S-q",        spawn "xmonad --recompile && xmonad --restart")
+       [ ("M-S-q",        spawn "xmonad --recompile && xmonad --restart")
        , ("M-S-<Esc>",    io (exitWith ExitSuccess))
+
        , ("M-<Space>",    sendMessage NextLayout)
        , ("M-b",          sendMessage ToggleStruts)
 
@@ -47,28 +49,38 @@ myKeys = \c -> mkKeymap c $
        , ("M-q",          kill)
        , ("M-g",          goToSelected $ myGSConfig)
 
-       , ("M-w",          spawn "LANG=ru_RU.utf8 firefox")
-       , ("M-e",          spawn "emacs")
+       , ("M-w",          runOrRaise "firefox" (className =? "Firefox"))
+       , ("M-e",          runOrRaise "emacs" (className =? "Emacs"))
+       , ("M-s",          raiseMaybe (runInTerm "-name ncmpcpp" "ncmpcpp") (resource =? "ncmpcpp"))
 
+       , ("M-r v",        raise (className =? "MPlayer"))
+       , ("M-r a",        raise (className =? "Apvlv"))
+       , ("M-r f",        raise (className =? "feh"))
+
+       , ("M-<Return>",   spawn $ terminal c)
        , ("C-M-l",        spawn "slock")
        , ("M-<Esc>",      spawn "~/script/halt_menu.sh")
        , ("M-m",          spawn "~/script/dfm.sh")
-       , ("M-p",          spawn "dmenu_run -fn \"-xos4-terminus-medium-r-normal--12-120-72-72-c-60-*-*\" -l 3  -nb \"#cccccc\" -nf \"#111111\" -sb \"#111111\" -sf \"#cccccc\"")
+       , ("M-p",          spawn myRunner)
        , ("M-<Print>",    spawn "scrot '%Y-%m-%d_%H-%M-%S.png' -e 'mv $f ~/other/shots/'")
        ] ++
        [(m ++ k, windows $ f w)
         | (w, k) <- zip (XMonad.workspaces c) (map show [1..5])
         , (m, f) <- [("M-",W.greedyView), ("M-S-",W.shift)]]
 
-myManageHook = composeAll
-             [ className =? "Emacs"     --> doF (W.shift "2:emacs")
-             , className =? "Firefox"   --> doF (W.shift "3:net")
-             , className =? "MPlayer"   --> doFloat
-             , className =? "feh"       --> doFloat
+myManageHook = composeAll . concat $
+             [ [ className =? "Emacs"     --> doShift "2:emacs"      ]
+             , [ className =? "Firefox"   --> doShift "3:net"        ]
+
+             , [ resource  =? "ncmpcpp"   --> doShift "4:media"      ]
+
+             , [ className =? fl          --> doFloat | fl <- float  ]
              ]
+             where
+                  float = ["MPlayer", "feh"]
 
 
-myLayoutHook = onWorkspace "3:net" myFull $ standartLayouts
+myLayoutHook = onWorkspace "2:emacs" myFull $ onWorkspace "3:net" myFull $ standartLayouts
              where
                 standartLayouts = avoidStruts (myTiled ||| myFull)
                 myTiled  = Tall 1 (5/100) (1/2)
